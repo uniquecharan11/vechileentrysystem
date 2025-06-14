@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Entry System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #34495e;
+            border-bottom: 3px solid #3498db;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 15px 20px;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-tab.active {
+            background: #3498db;
+        }
+
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #e74c3c;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #229954);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+
+        .vehicle-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .vehicle-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 2px solid #ecf0f1;
+            transition: all 0.3s ease;
+        }
+
+        .vehicle-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .vehicle-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .vehicle-info {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .vehicle-info span:first-child {
+            font-weight: 600;
+            color: #34495e;
+        }
+
+        .status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-in {
+            background: #d5f4e6;
+            color: #27ae60;
+        }
+
+        .status-out {
+            background: #fadbd8;
+            color: #e74c3c;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            background: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .log-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .log-table th, .log-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .log-table th {
+            background: #34495e;
+            color: white;
+            font-weight: 600;
+        }
+
+        .log-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #d5f4e6;
+            color: #27ae60;
+            border: 1px solid #27ae60;
+        }
+
+        .alert-error {
+            background: #fadbd8;
+            color: #e74c3c;
+            border: 1px solid #e74c3c;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚗 Vehicle Entry Management System</h1>
+            <p>Comprehensive vehicle tracking and management solution</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('dashboard')">Dashboard</button>
+            <button class="nav-tab" onclick="showTab('register')">Register Vehicle</button>
+            <button class="nav-tab" onclick="showTab('entry')">Entry/Exit</button>
+            <button class="nav-tab" onclick="showTab('vehicles')">All Vehicles</button>
+            <button class="nav-tab" onclick="showTab('logs')">Activity Logs</button>
+        </div>
+
+        <div class="content">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalVehicles">0</div>
+                        <div class="stat-label">Total Vehicles</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="vehiclesInside">0</div>
+                        <div class="stat-label">Vehicles Inside</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="vehiclesOutside">0</div>
+                        <div class="stat-label">Vehicles Outside</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="todayEntries">0</div>
+                        <div class="stat-label">Today's Entries</div>
+                    </div>
+                </div>
+
+                <h3>Recent Activity</h3>
+                <div id="recentActivity">
+                    <p>No recent activity</p>
+                </div>
+            </div>
+
+            <!-- Register Vehicle Tab -->
+            <div id="register" class="tab-content">
+                <h2>Register New Vehicle</h2>
+                <div id="registerAlert"></div>
+                <form id="registerForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="licensePlate">License Plate Number</label>
+                            <input type="text" id="licensePlate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="vehicleType">Vehicle Type</label>
+                            <select id="vehicleType" required>
+                                <option value="">Select Type</option>
+                                <option value="car">Car</option>
+                                <option value="motorcycle">Motorcycle</option>
+                                <option value="truck">Truck</option>
+                                <option value="van">Van</option>
+                                <option value="bus">Bus</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ownerName">Owner Name</label>
+                            <input type="text" id="ownerName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="contactNumber">Contact Number</label>
+                            <input type="tel" id="contactNumber" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="vehicleModel">Vehicle Model</label>
+                            <input type="text" id="vehicleModel" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="vehicleColor">Vehicle Color</label>
+                            <input type="text" id="vehicleColor" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success">Register Vehicle</button>
+                </form>
+            </div>
+
+            <!-- Entry/Exit Tab -->
+            <div id="entry" class="tab-content">
+                <h2>Vehicle Entry/Exit</h2>
+                <div id="entryAlert"></div>
+                <form id="entryForm">
+                    <div class="form-group">
+                        <label for="entryLicensePlate">License Plate Number</label>
+                        <input type="text" id="entryLicensePlate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="actionType">Action</label>
+                        <select id="actionType" required>
+                            <option value="">Select Action</option>
+                            <option value="entry">Entry</option>
+                            <option value="exit">Exit</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="purpose">Purpose (Optional)</label>
+                        <input type="text" id="purpose" placeholder="e.g., Delivery, Visit, Maintenance">
+                    </div>
+                    <button type="submit" class="btn">Record Entry/Exit</button>
+                </form>
+            </div>
+
+            <!-- All Vehicles Tab -->
+            <div id="vehicles" class="tab-content">
+                <h2>All Registered Vehicles</h2>
+                <input type="text" id="vehicleSearch" class="search-box" placeholder="Search vehicles by license plate, owner name, or model...">
+                <div id="vehicleList" class="vehicle-grid">
+                    <!-- Vehicle cards will be populated here -->
+                </div>
+            </div>
+
+            <!-- Activity Logs Tab -->
+            <div id="logs" class="tab-content">
+                <h2>Activity Logs</h2>
+                <input type="text" id="logSearch" class="search-box" placeholder="Search logs...">
+                <button class="btn btn-warning" onclick="clearLogs()">Clear All Logs</button>
+                <table class="log-table" id="logTable">
+                    <thead>
+                        <tr>
+                            <th>Date & Time</th>
+                            <th>License Plate</th>
+                            <th>Action</th>
+                            <th>Purpose</th>
+                            <th>Owner</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logTableBody">
+                        <!-- Log entries will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data storage
+        let vehicles = [];
+        let activityLogs = [];
+
+        // Initialize the system
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            updateDashboard();
+            displayVehicles();
+            displayLogs();
+        });
+
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all nav tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Update displays when switching to certain tabs
+            if (tabName === 'dashboard') {
+                updateDashboard();
+            } else if (tabName === 'vehicles') {
+                displayVehicles();
+            } else if (tabName === 'logs') {
+                displayLogs();
+            }
+        }
+
+        // Vehicle registration
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const licensePlate = document.getElementById('licensePlate').value.toUpperCase();
+            const vehicleType = document.getElementById('vehicleType').value;
+            const ownerName = document.getElementById('ownerName').value;
+            const contactNumber = document.getElementById('contactNumber').value;
+            const vehicleModel = document.getElementById('vehicleModel').value;
+            const vehicleColor = document.getElementById('vehicleColor').value;
+            
+            // Check if vehicle already exists
+            if (vehicles.find(v => v.licensePlate === licensePlate)) {
+                showAlert('registerAlert', 'Vehicle with this license plate already exists!', 'error');
+                return;
+            }
+            
+            // Create new vehicle
+            const newVehicle = {
+                id: Date.now(),
+                licensePlate: licensePlate,
+                vehicleType: vehicleType,
+                ownerName: ownerName,
+                contactNumber: contactNumber,
+                vehicleModel: vehicleModel,
+                vehicleColor: vehicleColor,
+                status: 'out',
+                registrationDate: new Date().toISOString(),
+                lastEntry: null,
+                lastExit: null
+            };
+            
+            vehicles.push(newVehicle);
+            saveData();
+            
+            // Log the registration
+            logActivity(licensePlate, 'registration', 'Vehicle registered', ownerName);
+            
+            showAlert('registerAlert', 'Vehicle registered successfully!', 'success');
+            document.getElementById('registerForm').reset();
+            updateDashboard();
+        });
+
+        // Entry/Exit handling
+        document.getElementById('entryForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const licensePlate = document.getElementById('entryLicensePlate').value.toUpperCase();
+            const actionType = document.getElementById('actionType').value;
+            const purpose = document.getElementById('purpose').value;
+            
+            // Find the vehicle
+            const vehicle = vehicles.find(v => v.licensePlate === licensePlate);
+            
+            if (!vehicle) {
+                showAlert('entryAlert', 'Vehicle not found! Please register the vehicle first.', 'error');
+                return;
+            }
+            
+            // Check action validity
+            if (actionType === 'entry' && vehicle.status === 'in') {
+                showAlert('entryAlert', 'Vehicle is already inside!', 'error');
+                return;
+            }
+            
+            if (actionType === 'exit' && vehicle.status === 'out') {
+                showAlert('entryAlert', 'Vehicle is already outside!', 'error');
+                return;
+            }
+            
+            // Update vehicle status
+            vehicle.status = actionType === 'entry' ? 'in' : 'out';
+            if (actionType === 'entry') {
+                vehicle.lastEntry = new Date().toISOString();
+            } else {
+                vehicle.lastExit = new Date().toISOString();
+            }
+            
+            // Log the activity
+            logActivity(licensePlate, actionType, purpose, vehicle.ownerName);
+            
+            saveData();
+            showAlert('entryAlert', Vehicle ${actionType} recorded successfully!, 'success');
+            document.getElementById('entryForm').reset();
+            updateDashboard();
+        });
+
+        // Activity logging
+        function logActivity(licensePlate, action, purpose, ownerName) {
+            const logEntry = {
+                id: Date.now(),
+                timestamp: new Date().toISOString(),
+                licensePlate: licensePlate,
+                action: action,
+                purpose: purpose || '-',
+                ownerName: ownerName
+            };
+            
+            activityLogs.unshift(logEntry); // Add to beginning of array
+            saveData();
+        }
+
+        // Dashboard updates
+        function updateDashboard() {
+            const totalVehicles = vehicles.length;
+            const vehiclesInside = vehicles.filter(v => v.status === 'in').length;
+            const vehiclesOutside = vehicles.filter(v => v.status === 'out').length;
+            
+            // Count today's entries
+            const today = new Date().toDateString();
+            const todayEntries = activityLogs.filter(log => {
+                const logDate = new Date(log.timestamp).toDateString();
+                return logDate === today && log.action === 'entry';
+            }).length;
+            
+            document.getElementById('totalVehicles').textContent = totalVehicles;
+            document.getElementById('vehiclesInside').textContent = vehiclesInside;
+            document.getElementById('vehiclesOutside').textContent = vehiclesOutside;
+            document.getElementById('todayEntries').textContent = todayEntries;
+            
+            // Update recent activity
+            const recentActivity = document.getElementById('recentActivity');
+            const recentLogs = activityLogs.slice(0, 5);
+            
+            if (recentLogs.length === 0) {
+                recentActivity.innerHTML = '<p>No recent activity</p>';
+            } else {
+                recentActivity.innerHTML = recentLogs.map(log => `
+                    <div class="vehicle-card">
+                        <strong>${log.licensePlate}</strong> - ${log.action.toUpperCase()}
+                        <br><small>${formatDateTime(log.timestamp)} | ${log.ownerName}</small>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Display vehicles
+        function displayVehicles() {
+            const vehicleList = document.getElementById('vehicleList');
+            const searchTerm = document.getElementById('vehicleSearch').value.toLowerCase();
+            
+            const filteredVehicles = vehicles.filter(vehicle => 
+                vehicle.licensePlate.toLowerCase().includes(searchTerm) ||
+                vehicle.ownerName.toLowerCase().includes(searchTerm) ||
+                vehicle.vehicleModel.toLowerCase().includes(searchTerm)
+            );
+            
+            if (filteredVehicles.length === 0) {
+                vehicleList.innerHTML = '<p>No vehicles found</p>';
+                return;
+            }
+            
+            vehicleList.innerHTML = filteredVehicles.map(vehicle => `
+                <div class="vehicle-card">
+                    <h3>${vehicle.licensePlate}</h3>
+                    <div class="vehicle-info">
+                        <span>Owner:</span>
+                        <span>${vehicle.ownerName}</span>
+                    </div>
+                    <div class="vehicle-info">
+                        <span>Type:</span>
+                        <span>${vehicle.vehicleType}</span>
+                    </div>
+                    <div class="vehicle-info">
+                        <span>Model:</span>
+                        <span>${vehicle.vehicleModel}</span>
+                    </div>
+                    <div class="vehicle-info">
+                        <span>Color:</span>
+                        <span>${vehicle.vehicleColor}</span>
+                    </div>
+                    <div class="vehicle-info">
+                        <span>Contact:</span>
+                        <span>${vehicle.contactNumber}</span>
+                    </div>
+                    <div class="vehicle-info">
+                        <span>Status:</span>
+                        <span class="status ${vehicle.status === 'in' ? 'status-in' : 'status-out'}">
+                            ${vehicle.status === 'in' ? 'Inside' : 'Outside'}
+                        </span>
+                    </div>
+                    <div class="vehicle-info">
+                        <span>Registered:</span>
+                        <span>${formatDate(vehicle.registrationDate)}</span>
+                    </div>
+                    <button class="btn btn-danger" onclick="deleteVehicle(${vehicle.id})">Delete</button>
+                </div>
+            `).join('');
+        }
+
+        // Display logs
+        function displayLogs() {
+            const logTableBody = document.getElementById('logTableBody');
+            const searchTerm = document.getElementById('logSearch').value.toLowerCase();
+            
+            const filteredLogs = activityLogs.filter(log => 
+                log.licensePlate.toLowerCase().includes(searchTerm) ||
+                log.ownerName.toLowerCase().includes(searchTerm) ||
+                log.action.toLowerCase().includes(searchTerm) ||
+                log.purpose.toLowerCase().includes(searchTerm)
+            );
+            
+            if (filteredLogs.length === 0) {
+                logTableBody.innerHTML = '<tr><td colspan="5">No logs found</td></tr>';
+                return;
+            }
+            
+            logTableBody.innerHTML = filteredLogs.map(log => `
+                <tr>
+                    <td>${formatDateTime(log.timestamp)}</td>
+                    <td>${log.licensePlate}</td>
+                    <td><span class="status ${log.action === 'entry' ? 'status-in' : 'status-out'}">${log.action.toUpperCase()}</span></td>
+                    <td>${log.purpose}</td>
+                    <td>${log.ownerName}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Delete vehicle
+        function deleteVehicle(vehicleId) {
+            if (confirm('Are you sure you want to delete this vehicle?')) {
+                vehicles = vehicles.filter(v => v.id !== vehicleId);
+                saveData();
+                displayVehicles();
+                updateDashboard();
+            }
+        }
+
+        // Clear logs
+        function clearLogs() {
+            if (confirm('Are you sure you want to clear all logs?')) {
+                activityLogs = [];
+                saveData();
+                displayLogs();
+                updateDashboard();
+            }
+        }
+
+        // Search functionality
+        document.getElementById('vehicleSearch').addEventListener('input', displayVehicles);
+        document.getElementById('logSearch').addEventListener('input', displayLogs);
+
+        // Utility functions
+        function showAlert(elementId, message, type) {
+            const alertDiv = document.getElementById(elementId);
+            alertDiv.innerHTML = <div class="alert alert-${type === 'success' ? 'success' : 'error'}">${message}</div>;
+            setTimeout(() => {
+                alertDiv.innerHTML = '';
+            }, 5000);
+        }
+
+        function formatDateTime(dateString) {
+            return new Date(dateString).toLocaleString();
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString();
+        }
+
+        // Data persistence (using memory since localStorage is not available)
+        function saveData() {
+            // In a real application, this would save to a database
+            // For now, data persists only during the session
+        }
+
+        function loadData() {
+            // In a real application, this would load from a database
+            // Adding some sample data for demonstration
+            if (vehicles.length === 0) {
+                vehicles = [
+                    {
+                        id: 1,
+                        licensePlate: 'ABC123',
+                        vehicleType: 'car',
+                        ownerName: 'John Doe',
+                        contactNumber: '+1234567890',
+                        vehicleModel: 'Toyota Camry',
+                        vehicleColor: 'Blue',
+                        status: 'in',
+                        registrationDate: new Date(Date.now() - 86400000).toISOString(),
+                        lastEntry: new Date().toISOString(),
+                        lastExit: null
+                    },
+                    {
+                        id: 2,
+                        licensePlate: 'XYZ789',
+                        vehicleType: 'motorcycle',
+                        ownerName: 'Jane Smith',
+                        contactNumber: '+1234567891',
+                        vehicleModel: 'Honda CBR',
+                        vehicleColor: 'Red',
+                        status: 'out',
+                        registrationDate: new Date(Date.now() - 172800000).toISOString(),
+                        lastEntry: null,
+                        lastExit: new Date(Date.now() - 3600000).toISOString()
+                    }
+                ];
+                
+                activityLogs = [
+                    {
+                        id: 1,
+                        timestamp: new Date().toISOString(),
+                        licensePlate: 'ABC123',
+                        action: 'entry',
+                        purpose: 'Delivery',
+                        ownerName: 'John Doe'
+                    },
+                    {
+                        id: 2,
+                        timestamp: new Date(Date.now() - 3600000).toISOString(),
+                        licensePlate: 'XYZ789',
+                        action: 'exit',
+                        purpose: 'End of visit',
+                        ownerName: 'Jane Smith'
+                    }
+                ];
+            }
+        }
+    </script>
+</body>
+</html>
